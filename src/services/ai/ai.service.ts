@@ -1,5 +1,5 @@
-import { injectable } from "tsyringe";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { injectable } from 'tsyringe';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @injectable()
 export class AIService {
@@ -7,18 +7,18 @@ export class AIService {
 
   constructor() {
     if (!process.env.GOOGLE_API_KEY) {
-      throw new Error("GOOGLE_API_KEY não configurada no ambiente");
+      throw new Error('GOOGLE_API_KEY não configurada no ambiente');
     }
     this.genAi = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
   }
 
   async transformCarScene(base64code: string, scenario: string) {
-    if (!base64code || base64code.trim() === "") {
-      throw new Error("Imagem inválida ou não fornecida");
+    if (!base64code || base64code.trim() === '') {
+      throw new Error('Imagem inválida ou não fornecida');
     }
 
-    if (!scenario || scenario.trim() === "") {
-      throw new Error("Cenário não fornecido");
+    if (!scenario || scenario.trim() === '') {
+      throw new Error('Cenário não fornecido');
     }
 
     const prompt = `Você é um modelo especializado em manipulação visual precisa.
@@ -44,14 +44,14 @@ export class AIService {
     `;
 
     const model = this.genAi.getGenerativeModel({
-      model: "gemini-1.5-pro",
+      model: 'gemini-2.5-flash-image',
     });
 
     const result = await model.generateContent([
       {
         inlineData: {
           data: base64code,
-          mimeType: "image/png",
+          mimeType: 'image/png',
         },
       },
       { text: prompt },
@@ -64,10 +64,10 @@ export class AIService {
 
     if (!imageData) {
       console.error(
-        "Resposta completa do Gemini:",
-        JSON.stringify(response, null, 2)
+        'Resposta completa do Gemini:',
+        JSON.stringify(response, null, 2),
       );
-      throw new Error("A IA não retornou uma imagem válida");
+      throw new Error('A IA não retornou uma imagem válida');
     }
 
     return imageData;
