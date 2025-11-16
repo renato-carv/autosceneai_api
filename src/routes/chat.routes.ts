@@ -1,17 +1,17 @@
-import { Router } from "express";
-import multer from "multer";
-import { PostChatController } from "../controllers/chat/PostChat.controller.js";
-import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { Router } from 'express';
+import { PostChatController } from '../controllers/chat/PostChat.controller.js';
+import { chatSchema } from '../schemas/chat.schema.js';
+import { authMiddleware } from '../middlewares/auth.middleware.js';
+import { validate } from '../middlewares/validate.middleware.js';
 
-const upload = multer();
 const router = Router();
 const chatController = new PostChatController();
 
 router.post(
-  "/chat",
+  '/chat',
   authMiddleware,
-  upload.single("image"),
-  chatController.handle.bind(chatController)
+  validate(chatSchema),
+  chatController.handle.bind(chatController),
 );
 
 export default router;

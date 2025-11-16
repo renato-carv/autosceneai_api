@@ -1,5 +1,6 @@
 import { injectable } from 'tsyringe';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { ValidationError } from '../../errors/validationError.js';
 
 @injectable()
 export class AIService {
@@ -7,18 +8,22 @@ export class AIService {
 
   constructor() {
     if (!process.env.GOOGLE_API_KEY) {
-      throw new Error('GOOGLE_API_KEY não configurada no ambiente');
+      throw new ValidationError('GOOGLE_API_KEY não configurada no ambiente');
     }
     this.genAi = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
   }
 
-  async transformCarScene(base64code: string, scenario: string) {
+  async transformCarScene(
+    base64code: string,
+    scenario: string,
+    mimeType: string = 'image/png',
+  ) {
     if (!base64code || base64code.trim() === '') {
-      throw new Error('Imagem inválida ou não fornecida');
+      throw new ValidationError('Imagem inválida ou não fornecida');
     }
 
     if (!scenario || scenario.trim() === '') {
-      throw new Error('Cenário não fornecido');
+      throw new ValidationError('Cenário não fornecido');
     }
 
     const prompt = `Você é um modelo especializado em manipulação visual precisa.
@@ -51,7 +56,7 @@ export class AIService {
       {
         inlineData: {
           data: base64code,
-          mimeType: 'image/png',
+          mimeType,
         },
       },
       { text: prompt },

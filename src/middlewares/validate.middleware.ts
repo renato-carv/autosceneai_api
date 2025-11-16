@@ -1,6 +1,6 @@
-// src/middlewares/validate.middleware.ts
-import type { Request, Response, NextFunction } from "express";
-import type { ZodTypeAny } from "zod";
+import type { Request, Response, NextFunction } from 'express';
+import type { ZodTypeAny } from 'zod';
+import { ValidationError } from '../errors/validationError.js';
 
 export const validate =
   (schema: ZodTypeAny) => (req: Request, res: Response, next: NextFunction) => {
@@ -8,6 +8,9 @@ export const validate =
       schema.parse(req.body);
       next();
     } catch (error: any) {
-      return res.status(400).json({ error: error.errors ?? error.message });
+      throw new ValidationError(
+        'Erro de validação',
+        error.errors ?? error.message,
+      );
     }
   };
