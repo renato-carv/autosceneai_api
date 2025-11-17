@@ -7,11 +7,15 @@ export class PostChatController {
   async handle(req: Request, res: Response) {
     const { scenario, image } = req.body;
 
+    if (!scenario || !image) {
+      return res
+        .status(400)
+        .json({ error: 'Imagem e cenário são obrigatórios' });
+    }
+
     const base64code = image.includes('base64,')
       ? image.split('base64,')[1]
       : image;
-    const mimeMatch = image.match(/^data:(image\/[a-zA-Z]+);base64,/);
-    const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
 
     const aiService = container.resolve(AIService);
 
@@ -19,8 +23,8 @@ export class PostChatController {
       const transformedImage = await aiService.transformCarScene(
         base64code,
         scenario,
-        mimeType,
       );
+
       return res.json({
         message: 'Imagem transformada com sucesso',
         image: transformedImage,
@@ -28,7 +32,7 @@ export class PostChatController {
     } catch (error: any) {
       if (error.message.includes('429')) {
         throw new QuotaExceededError(
-          'Você excedeu o limite de requisições da API. Tente novamente mais tarde.',
+          'Você excedeu o limite de requisições da API.',
           error.message,
         );
       }
