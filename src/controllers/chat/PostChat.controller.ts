@@ -1,34 +1,22 @@
+import type { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import { AIService } from '../../services/ai/ai.service.js';
 import { QuotaExceededError } from '../../errors/quotaExceedError.js';
-import type { Request, Response } from 'express';
 
 export class PostChatController {
+  private aiService = container.resolve(AIService);
   async handle(req: Request, res: Response) {
     const { scenario, image } = req.body;
-
-    const base64code = image.includes('base64,')
-      ? image.split('base64,')[1]
-      : image;
-    const mimeMatch = image.match(/^data:(image\/[a-zA-Z]+);base64,/);
-    const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
-
-    const aiService = container.resolve(AIService);
-
     try {
-      const transformedImage = await aiService.transformCarScene(
-        base64code,
-        scenario,
-        mimeType,
-      );
+      const imageUrl = await this.aiService.transformCarScene(image, scenario);
       return res.json({
         message: 'Imagem transformada com sucesso',
-        image: transformedImage,
+        imageUrl,
       });
     } catch (error: any) {
       if (error.message.includes('429')) {
         throw new QuotaExceededError(
-          'Você excedeu o limite de requisições da API. Tente novamente mais tarde.',
+          'Você excedeu o limite de requisições da API.',
           error.message,
         );
       }
